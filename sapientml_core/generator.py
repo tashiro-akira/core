@@ -43,6 +43,8 @@ from .training import project_corpus
 
 logger = setup_logger()
 
+column_name_rename="feature_train = feature_train.rename(columns={TARGET_COLUMNS[0]: cols_has_symbols})\n" + "target_train = target_train.rename(columns={TARGET_COLUMNS[0]: cols_has_symbols})\n" +"TARGET_COLUMNS = cols_has_symbols\n"
+
 
 def add_prefix(filename, prefix):
     """Add prefix to filename if prefix exists.
@@ -219,8 +221,17 @@ class SapientMLGenerator(PipelineGenerator, CodeBlockGenerator):
 
         result_pipelines: list[Code] = []
         for pipeline in sapientml_results:
+            print(pipeline.test)
+            
             pipeline.validation = code_block.validation + pipeline.validation
             pipeline.test = code_block.test + pipeline.test
+            if "cols_has_symbols" in pipeline.test:
+                print(pipeline.test)
+
+                addindex = pipeline.test.index("# OUTPUT PREDICTION")
+                pipeline.test = pipeline.test[:addindex] + column_name_rename + pipeline.test[addindex:]
+                print(pipeline.test)
+
             pipeline.train = code_block.train + pipeline.train
             pipeline.predict = code_block.predict + pipeline.predict
             result_pipelines.append(pipeline)
